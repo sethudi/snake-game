@@ -1,4 +1,4 @@
-import { setSelectionRange } from '@testing-library/user-event/dist/utils';
+
 import React, {useEffect, useState} from 'react';
 import {randomIntFromInterval,useInterval} from '../lib/utils.js';
 import './Board.css';
@@ -30,7 +30,7 @@ const Direction ={
 
 const BOARD_SIZE =15;
 const STARTING_FOOD_CELL =48;
-const STARTING_SNAKE_CELL =44;
+
 
 const getStartingSnakeLLValue = (board) => {
     const rowSize = board.length;
@@ -45,19 +45,24 @@ const getStartingSnakeLLValue = (board) => {
     }
 }
 
-const Board = () =>{
-    const [score, setScore] = useState(0);
-    const [board, setBoard] = useState(createBoard(BOARD_SIZE));
+    const Board = () =>{
+        const [score, setScore] = useState(0);
+        const [board] = useState(createBoard(BOARD_SIZE));
+        
+        const [snake, setSnake] =useState(new LinkedList(getStartingSnakeLLValue(board)));
+        const [snakeCells, setSnakeCells] = useState(new Set([snake.head.value.cell]));
+        const [foodCell,setFoodCell] = useState(snake.head.value.cell +5);
+        const [direction, setDirection] = useState(Direction.RIGHT);
     
-    const [snake, setSnake] =useState(new LinkedList(getStartingSnakeLLValue(board)));
-    const [snakeCells, setSnakeCells] = useState(new Set([snake.head.value.cell]));
-    const [foodCell,setFoodCell] = useState(snake.head.value.cell +5);
-    const [direction, setDirection] = useState(Direction.RIGHT);
 
     useEffect(() => {
-        //setInterval(()=>{
-        //    moveSnake();
-        //}, 1000);
+        const handleKeydown =(e) => {
+            const newDirection = getDirectionFromKey(e.key);
+            const isValidDirection = newDirection !== '';
+            if (!isValidDirection) return;
+            setDirection(newDirection);
+            }
+
         window.addEventListener('keydown', e => {
             handleKeydown(e);
             });
@@ -67,19 +72,7 @@ const Board = () =>{
         moveSnake();
     }, 200);
 
-    const handleKeydown = e => {
-        const newDirection = getDirectionFromKey(e.key);
-        const isValidDirection = newDirection !== '';
-        if (!isValidDirection) return;
-        const snakeWillRunIntoItself =
-          getOppositeDirection(newDirection) === direction && snakeCells.size > 1;
-        // Note: this functionality is currently broken, for the same reason that
-        // `useInterval` is needed. Specifically, the `direction` and `snakeCells`
-        // will currently never reflect their "latest version" when `handleKeydown`
-        // is called. I leave it as an exercise to the viewer to fix this :P
-        if (snakeWillRunIntoItself) return;
-        setDirection(newDirection);
-      };
+    
 
     const moveSnake = () => {
         const currentHeadCoords = {
